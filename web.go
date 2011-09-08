@@ -20,6 +20,7 @@ import (
     "strconv"
     "strings"
     "time"
+	"url"
 )
 
 type conn interface {
@@ -591,9 +592,9 @@ func fileExists(dir string) bool {
 func Urlencode(data map[string]string) string {
     var buf bytes.Buffer
     for k, v := range data {
-        buf.WriteString(http.URLEscape(k))
+        buf.WriteString(url.QueryEscape(k))
         buf.WriteByte('=')
-        buf.WriteString(http.URLEscape(v))
+        buf.WriteString(url.QueryEscape(v))
         buf.WriteByte('&')
     }
     s := buf.String()
