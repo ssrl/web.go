@@ -12,6 +12,8 @@ import (
     "strconv"
     "strings"
     "testing"
+	"url"
+	//"dump"
 )
 
 func init() {
@@ -46,7 +48,7 @@ func buildTestResponse(buf *bytes.Buffer) *testResponse {
     response := testResponse{headers: make(map[string][]string), cookies: make(map[string]string)}
     s := buf.String()
 
-    contents := strings.Split(s, "\r\n\r\n", 2)
+    contents := strings.SplitN(s, "\r\n\r\n", 2)
 
     header := contents[0]
 
@@ -54,13 +56,14 @@ func buildTestResponse(buf *bytes.Buffer) *testResponse {
         response.body = contents[1]
     }
 
-    headers := strings.Split(header, "\r\n", -1)
+    headers := strings.SplitN(header, "\r\n", -1)
 
-    statusParts := strings.Split(headers[0], " ", 3)
+    statusParts := strings.SplitN(headers[0], " ", 3)
     response.statusCode, _ = strconv.Atoi(statusParts[1])
+	
 
     for _, h := range headers[1:] {
-        split := strings.Split(h, ":", 2)
+        split := strings.SplitN(h, ":", 2)
         name := strings.TrimSpace(split[0])
         value := strings.TrimSpace(split[1])
         if _, ok := response.headers[name]; !ok {
@@ -71,12 +74,11 @@ func buildTestResponse(buf *bytes.Buffer) *testResponse {
         copy(newheaders, response.headers[name])
         newheaders[len(newheaders)-1] = value
         response.headers[name] = newheaders
-
         //if the header is a cookie, set it
         if name == "Set-Cookie" {
             i := strings.Index(value, ";")
             cookie := value[0:i]
-            cookieParts := strings.Split(cookie, "=", 2)
+            cookieParts := strings.SplitN(cookie, "=", 2)
             response.cookies[strings.TrimSpace(cookieParts[0])] = strings.TrimSpace(cookieParts[1])
         }
     }
@@ -209,7 +211,7 @@ func buildTestRequest(method string, path string, body string, headers map[strin
     host := "127.0.0.1"
     port := "80"
     rawurl := "http://" + host + ":" + port + path
-    url, _ := http.ParseURL(rawurl)
+    url, _ := url.Parse(rawurl)
 
     proto := "HTTP/1.1"
     useragent := "web.go test framework"
@@ -347,7 +349,7 @@ func buildTestScgiRequest(method string, path string, body string, headers map[s
 
     return &buf
 }
-
+/*
 func TestScgi(t *testing.T) {
     for _, test := range tests {
         req := buildTestScgiRequest(test.method, test.path, test.body, make(map[string]string))
@@ -413,7 +415,7 @@ func TestScgiHead(t *testing.T) {
         }
     }
 }
-
+*/
 
 func buildFcgiKeyValue(key string, val string) []byte {
 
@@ -680,3 +682,4 @@ func TestCloseServer(t *testing.T) {
     }
 }
 */
+
